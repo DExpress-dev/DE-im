@@ -10,3 +10,4 @@ Function, support the player to determine whether to use encrypted transmission 
 ![image](https://github.com/DExpress-dev/DE-im/blob/main/image/IM_1.png)
 ![image](https://github.com/DExpress-dev/DE-im/blob/main/image/IM_2.png)
 ![image](https://github.com/DExpress-dev/DE-im/blob/main/image/IM_3.png)
+![image](https://github.com/DExpress-dev/DE-im/blob/main/image/IM_4.png)
