@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "-[video_decoder decode:withSize:]:video_decoder.m">
+      </ContextState>
+      <ContextState
+         contextName = "didDecompress:video_decoder.m">
+      </ContextState>
+      <ContextState
+         contextName = "didCompressH264:video_encoder.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[video_encoder init_with_configuration]:video_encoder.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[video_decoder init_decoder]:video_decoder.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[video_encoder init_encoder:height:]:video_encoder.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[video_decoder decodeing:withSize:]:video_decoder.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[CaptureSession initAVCaptureSession]:capture_session.m">
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>
