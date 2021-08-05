@@ -11,53 +11,17 @@
 #import "ViewController.h"
 #import <WebKit/WebKit.h>
 #import "http.h"
+#import "VCallHeader.h"
 
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-
-#define AccountKey @"account"
-#define PwdKey @"pwd"
-#define RmbPwdKey @"rmb_pwd"
-#define AutoLoginKey @"auto_login"
-
-static NSString *appVersion = @"1.0.0.6";
-
-//一些常量的定义;
-const UInt32 KB             = 1024;
-const UInt32 MB             = 1024 * KB;
-const UInt32 TOPSCALE       = 90;
-const int logoYSCALE        = 200;  //logo保存的相关位置信息
-const int bottomX           = 23;   //下部的x位置
-const int bottomY           = 54;
-const int bottomW           = 60;
-const int bottomH           = 60;
-const int bottomOffset      = 45;   //下部间隔
-const int bottomSpace       = 72;
-const int controlInterval   = 50;
-const int captureInterval   = 100;
-
-const int accountTextX      = 50;
-const int accountTextYSCALE = 500;
-const int textH             = 30;
-const int textInterval      = 50;
-const int editWidth         = 220;
-
-//字体大小
-const float fontSize        = 13.5f;    //底部文字大小
-const float welComeSize     = 15.0f;    //欢迎词大小
-const float titleFontSize   = 16.0f;    //抬头文字大小
-const float wifiSize        = 10.5f;    //wifi文字大小
 
 //调试使用，输入和输出的数据;
 static AudioBuffer  g_inputBuffer;
 static AudioBuffer  g_outputBuffer;
 static UInt32       g_inputByteSize  = 0;
 static UInt32       g_outputByteSize = 0;
-
-//**********
-enum Mode{HOME, LOGIN, UPLOAD, SET};
-enum State{NONE, UPLOADING, WATCHING};
 
 //用户结构
 struct User
@@ -152,6 +116,7 @@ struct User
 @property (nonatomic, strong) video_encoder *video_encoder_ptr;         //视频编码对象;
 @property (nonatomic, strong) audio_encoder *audio_encoder_ptr;         //音频编码对象;
 @property (nonatomic, assign) http_client *http_client_ptr;             //HTTP对象;
+@property (nonatomic, assign) vcall_header *vcall_header_ptr;           //Header对象;
 @property(retain,nonatomic) NSTimer* aliveTimer;                        //心跳时钟
 
 //音视频使用的配置信息;
@@ -201,61 +166,6 @@ struct User
     TOP = (allRect.size.height / 1000) * TOPSCALE;
     logoY = (allRect.size.height / 1000) * logoYSCALE;
     accountTextY = (allRect.size.height / 1000) * accountTextYSCALE;
-}
-
-//得到当前速度的string
--(NSString *)rateString: (unsigned int)rate
-{
-    unsigned int mb_round = 0;
-    unsigned int kb_round = 0;
-    unsigned int spare = rate;
-
-    //得到MB
-    if(spare >= MB)
-    {
-        mb_round = (spare / MB);
-        spare = (spare % MB);
-    }
-
-    //得到KB
-    if(spare >= KB)
-    {
-        kb_round = (spare / KB);
-        spare = (spare % KB);
-    }
-
-    //组合;
-    char speed[1024] = {0};
-    if(mb_round > 0)
-        sprintf(speed, "%dMB%dKB/s", mb_round, kb_round);
-    else if(kb_round > 0)
-        sprintf(speed, "%dKB/s", kb_round);
-    else
-        sprintf(speed, "%d/s", spare);
-
-    NSString *resultString = [NSString stringWithUTF8String:speed];
-    return resultString;
-}
-
-
-//将指定数据保存成aac文件
--(BOOL)saveAccFile:(NSString *)filePath
-                  :(char*) data
-{
-    NSData *appendData = [NSData dataWithBytes:data length:strlen(data)];
-    
-    //读取原有数据;
-    NSData * fileData =[NSData dataWithContentsOfFile:filePath];
-    
-    //定义acc数据类型
-    NSMutableData * accData = [[NSMutableData alloc] init];
-    
-    //合并文件
-    [accData appendData:fileData];
-    [accData appendData:appendData];
-    
-    //NSMutableData是继承至NSData的所以可以调用writeToFile 把数据写入到一个指定的目录下
-    return [accData writeToFile:filePath atomically:YES];
 }
 
 -(void)initShowUser{
@@ -840,7 +750,7 @@ struct User
     [videoBtn setTitle:@"画 面" forState:UIControlStateNormal];
     [videoBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [self setButtonContentCenter:videoBtn];
-    [videoBtn addTarget:self action:@selector(videoClick:) forControlEvents:UIControlEventTouchUpInside];
+    [videoBtn addTarget:self action:@selector(onVideoClick:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:videoBtn];
         
     //音频按钮;
@@ -853,7 +763,7 @@ struct User
     [audioBtn setTitle:@"声 音" forState:UIControlStateNormal];
     [audioBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [self setButtonContentCenter:audioBtn];
-    [audioBtn addTarget:self action:@selector(audioClick:) forControlEvents:UIControlEventTouchUpInside];
+    [audioBtn addTarget:self action:@selector(onAudioClick:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:audioBtn];
         
     //上传按钮;
@@ -865,7 +775,7 @@ struct User
     [uploadBtn setTitle:@"上 传" forState:UIControlStateNormal];
     [uploadBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [self setButtonContentCenter:uploadBtn];
-    [uploadBtn addTarget:self action:@selector(UploadSwitchClick:) forControlEvents:UIControlEventTouchUpInside];
+    [uploadBtn addTarget:self action:@selector(onUploadSwitchClick:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:uploadBtn];
         
     //简介按钮;
@@ -877,7 +787,7 @@ struct User
     [homeBtn setTitle:@"简 介" forState:UIControlStateNormal];
     [homeBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [self setButtonContentCenter:homeBtn];
-    [homeBtn addTarget:self action:@selector(HomeSwitchClick:) forControlEvents:UIControlEventTouchUpInside];
+    [homeBtn addTarget:self action:@selector(onHomeSwitchClick:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:homeBtn];
         
     //设置按钮;
@@ -889,7 +799,7 @@ struct User
     [setBtn setTitle:@"信 息" forState:UIControlStateNormal];
     [setBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [self setButtonContentCenter:setBtn];
-    [setBtn addTarget:self action:@selector(SetSwitchClick:) forControlEvents:UIControlEventTouchUpInside];
+    [setBtn addTarget:self action:@selector(onSetSwitchClick:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:setBtn];
         
     [self showButtomButton:true];
@@ -1006,7 +916,7 @@ struct User
     encryptionButtonRect.origin.y = passwordRect.origin.y + passwordRect.size.height + 10;
     encryptionButtonRect.size = encryptionWidthImage.size;
     [encryptionButton setFrame: encryptionButtonRect];
-    [encryptionButton addTarget:self action:@selector(EncryptionCheckBoxClick:) forControlEvents:UIControlEventTouchUpInside];
+    [encryptionButton addTarget:self action:@selector(onEncryptionCheckBoxClick:) forControlEvents:UIControlEventTouchUpInside];
     [loginFrmImageView addSubview:encryptionButton];
     
     //记住密码按钮
@@ -1034,7 +944,7 @@ struct User
     loginButtonRect.origin.y = passwordRect.origin.y + passwordRect.size.height + controlInterval;
     loginButtonRect.size = loginButton.currentBackgroundImage.size;
     [loginButton setFrame: loginButtonRect];
-    [loginButton addTarget:self action:@selector(LoginClick:) forControlEvents:UIControlEventTouchUpInside];
+    [loginButton addTarget:self action:@selector(onLoginClick:) forControlEvents:UIControlEventTouchUpInside];
     [loginFrmImageView addSubview:loginButton];
     
     //Welcome欢迎词;
@@ -1192,7 +1102,7 @@ struct User
     CaptureButtonRect.origin.y = logoRect.origin.y + logoRect.size.height + captureInterval;
     CaptureButtonRect.size = CaptureButton.currentBackgroundImage.size;
     [CaptureButton setFrame: CaptureButtonRect];
-    [CaptureButton addTarget:self action:@selector(CaptureClick:) forControlEvents:UIControlEventTouchUpInside];
+    [CaptureButton addTarget:self action:@selector(onCaptureClick:) forControlEvents:UIControlEventTouchUpInside];
     [uploadImageView addSubview:CaptureButton];
     
     //创建关闭
@@ -1361,6 +1271,11 @@ struct User
     [super viewDidLoad];
     [self mathScale];
     
+    if(nullptr == _vcall_header_ptr)
+    {
+        _vcall_header_ptr = [[vcall_header alloc]init];
+    }
+    
     initPlayed_ = false;
     sourceDown_ = false;
     _cur_position = back_camera;
@@ -1384,21 +1299,16 @@ struct User
     //启动保活时钟
     _aliveTimer = [NSTimer scheduledTimerWithTimeInterval:5
                                                    target:self
-                                                 selector:@selector(aliveTimed:)
+                                                 selector:@selector(onAliveTimed:)
                                                  userInfo:nil
                                                   repeats:YES];
     [[NSRunLoop currentRunLoop] addTimer:_aliveTimer forMode:NSRunLoopCommonModes];
 }
 
-- (void)aliveTimed:(NSTimer*)timer {
+- (void)onAliveTimed:(NSTimer*)timer {
 
     //需要使用保活时钟;
     [self keepAlive:self.roomName :self.userName];
-}
-
-//停止保活定时器
--(void)aliveTimed{
-    [_aliveTimer invalidate];
 }
 
 -(void)initMedia
@@ -1434,7 +1344,7 @@ struct User
 }
 
 //点击视频限制按钮
-- (IBAction)videoClick:(UIButton *)sender
+- (IBAction)onVideoClick:(UIButton *)sender
 {
     sender.selected = not sender.selected;
     _hideVideo = sender.selected;
@@ -1446,7 +1356,7 @@ struct User
 }
 
 //点击音频限制按钮
-- (IBAction)audioClick:(UIButton *)sender
+- (IBAction)onAudioClick:(UIButton *)sender
 {
     sender.selected = not sender.selected;
     _hideAudio = sender.selected;
@@ -1458,7 +1368,7 @@ struct User
 }
 
 //点击简介按钮
-- (IBAction)HomeSwitchClick:(UIButton *)sender
+- (IBAction)onHomeSwitchClick:(UIButton *)sender
 {
     sender.selected = !sender.isSelected;
     if (sender.selected)
@@ -1471,7 +1381,7 @@ struct User
 }
 
 //点击上传按钮
-- (IBAction)UploadSwitchClick:(UIButton *)sender
+- (IBAction)onUploadSwitchClick:(UIButton *)sender
 {
     sender.selected = !sender.isSelected;
     if (sender.selected)
@@ -1482,7 +1392,7 @@ struct User
 }
 
 //点击设置按钮
-- (IBAction)SetSwitchClick:(UIButton *)sender
+- (IBAction)onSetSwitchClick:(UIButton *)sender
 {
     sender.selected = !sender.isSelected;
     if (sender.selected)
@@ -1494,7 +1404,7 @@ struct User
 }
 
 //点击记住密码
-- (IBAction)EncryptionCheckBoxClick:(UIButton *)sender
+- (IBAction)onEncryptionCheckBoxClick:(UIButton *)sender
 {
     sender.selected = !sender.isSelected;
     _encryption = sender.selected;
@@ -1507,7 +1417,7 @@ struct User
 }
 
 //点击登录按钮
-- (IBAction)LoginClick:(UIButton *)sender
+- (IBAction)onLoginClick:(UIButton *)sender
 {
     sender.selected = !sender.isSelected;
     if (sender.selected)
@@ -1518,7 +1428,7 @@ struct User
 }
 
 //点击采集按钮
-- (IBAction)CaptureClick:(UIButton *)sender
+- (IBAction)onCaptureClick:(UIButton *)sender
 {
     sender.selected = !sender.isSelected;
     sender.hidden = true;
@@ -1575,8 +1485,8 @@ struct User
     {
         self.video_encoder_ptr = [[video_encoder alloc] init];
         self.video_encoder_ptr.delegate = self;
-        BOOL ret = [self.video_encoder_ptr initEncoder:width height:height fps:self.fps bite:0.7 * MB];
-//        BOOL ret = [self.video_encoder_ptr initEncoder:width height:height fps:self.fps bite:self.media_rate * MB];
+        
+        BOOL ret = [self.video_encoder_ptr initEncoder:width height:height fps:self.fps bite:self.media_rate * MB];
         if(ret == NO)
         {
             NSLog(@"Error: video_encoder_ptr Failed");
@@ -1653,7 +1563,7 @@ struct User
     uploadClosed_ = false;
     
     //初始化;
-    bool ret = [self.capture_session_ptr initVideoCapture:back_camera :capture_window_1280x720 :TRUE :self.audio_sample_rate :self.audio_channels :self.audio_perchannel :self.audio_buffer_size];
+    bool ret = [self.capture_session_ptr initVideoCapture:front_camera :capture_window_1280x720 :TRUE :self.audio_sample_rate :self.audio_channels :self.audio_perchannel :self.audio_buffer_size];
     if(!ret)
     {
         NSLog(@"Error: 初始化视频采集设备失败");
@@ -1673,6 +1583,8 @@ struct User
 {
     [super didReceiveMemoryWarning];
 }
+
+#pragma mark - Capture_Call_Back
 
 //****采集透出的回调函数****//
 #define kBitsPerComponent (8)
@@ -1910,7 +1822,7 @@ struct User
 {
     if(self.cur_mode == UPLOAD)
     {
-        NSString* strRate = [self rateString:send_rate];
+        NSString* strRate = [self.vcall_header_ptr rateString:send_rate];
         [self setRate:strRate];
     }
 }

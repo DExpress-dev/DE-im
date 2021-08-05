@@ -13,6 +13,7 @@
 		7B517B39262203710015549F /* libaudio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B517B33262203710015549F /* libaudio.a */; };
 		7B517B3A262203710015549F /* libvideo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B517B34262203710015549F /* libvideo.a */; };
 		7B517B3B262203710015549F /* libaudio_play.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B517B35262203710015549F /* libaudio_play.a */; };
+		7B57560626BBBAA7004C28BC /* VCallHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 7B57560526BBBAA7004C28BC /* VCallHeader.m */; };
 		7B9FE8572504B98300BB02DA /* http.m in Sources */ = {isa = PBXBuildFile; fileRef = 7B9FE8562504B98300BB02DA /* http.m */; };
 		7BA678A826AEB418009EF9A7 /* librudp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BDE5CFE26A6C806008E5274 /* librudp.a */; };
 		7BAD0B10250F17AC00E25234 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BAD0B0F250F17AB00E25234 /* WebKit.framework */; };
@@ -47,6 +48,8 @@
 		7B517B33262203710015549F /* libaudio.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaudio.a; path = ../../Lib/Packet/lib/libaudio.a; sourceTree = "<group>"; };
 		7B517B34262203710015549F /* libvideo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvideo.a; path = ../../Lib/Packet/lib/libvideo.a; sourceTree = "<group>"; };
 		7B517B35262203710015549F /* libaudio_play.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaudio_play.a; path = ../../Lib/Packet/lib/libaudio_play.a; sourceTree = "<group>"; };
+		7B57560426BBB98D004C28BC /* VCallHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VCallHeader.h; sourceTree = "<group>"; };
+		7B57560526BBBAA7004C28BC /* VCallHeader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VCallHeader.m; sourceTree = "<group>"; };
 		7B9FE8552504B96000BB02DA /* http.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = http.h; sourceTree = "<group>"; };
 		7B9FE8562504B98300BB02DA /* http.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = http.m; sourceTree = "<group>"; };
 		7BAD0B0F250F17AB00E25234 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
@@ -55,7 +58,6 @@
 		7BB43F8923312852004DAB29 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		7BB43F8B23312860004DAB29 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		7BDE5CFE26A6C806008E5274 /* librudp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = librudp.a; path = ../../Lib/Packet/lib/librudp.a; sourceTree = "<group>"; };
-		7BEDE4FD238ACB6500482FFB /* GPUImageBeautifyFilter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = GPUImageBeautifyFilter.m; path = ../../Lib/Packet/capture_beautiful/capture_session/GPUImageBeautifyFilter.m; sourceTree = "<group>"; };
 		A43047F81E4C0DC900D8B092 /* VCall-VCall.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "VCall-VCall.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A43047FC1E4C0DC900D8B092 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		A43047FE1E4C0DC900D8B092 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -110,7 +112,6 @@
 		A43047EF1E4C0DC900D8B092 = {
 			isa = PBXGroup;
 			children = (
-				7BEDE4FD238ACB6500482FFB /* GPUImageBeautifyFilter.m */,
 				A43047FA1E4C0DC900D8B092 /* VCall */,
 				A43047F91E4C0DC900D8B092 /* Products */,
 				7B8F016A1E96111200CBB4B6 /* Frameworks */,
@@ -130,6 +131,8 @@
 			children = (
 				A43047FE1E4C0DC900D8B092 /* AppDelegate.h */,
 				A43047FF1E4C0DC900D8B092 /* AppDelegate.m */,
+				7B57560426BBB98D004C28BC /* VCallHeader.h */,
+				7B57560526BBBAA7004C28BC /* VCallHeader.m */,
 				7B9FE8552504B96000BB02DA /* http.h */,
 				7B9FE8562504B98300BB02DA /* http.m */,
 				A43048011E4C0DC900D8B092 /* ViewController.h */,
@@ -224,6 +227,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7B57560626BBBAA7004C28BC /* VCallHeader.m in Sources */,
 				7B9FE8572504B98300BB02DA /* http.m in Sources */,
 				A43048001E4C0DC900D8B092 /* AppDelegate.m in Sources */,
 				A43047FD1E4C0DC900D8B092 /* main.m in Sources */,
@@ -397,6 +401,7 @@
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/header $(SRCROOT)/lib/include $(SRCROOT)/header/linux";
 				USE_HEADERMAP = YES;
 				VALID_ARCHS = arm64;
+				"VALID_ARCHS[arch=*]" = arm64;
 			};
 			name = Debug;
 		};

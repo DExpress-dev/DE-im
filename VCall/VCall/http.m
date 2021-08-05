@@ -80,7 +80,7 @@ static http_client *instance_ = nil;
  }
  
  */
--(bool)loginRoom :(NSString*)roomName :(NSString*)passWd: (NSString*)userName
+-(bool)loginRoom :(NSString*)roomName :(NSString*)passWd : (NSString*)userName
 {
     self.auth_result_ = false;
     dispatch_semaphore_t authSemaphore = dispatch_semaphore_create(0);
